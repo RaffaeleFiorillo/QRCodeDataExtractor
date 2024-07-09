@@ -1,0 +1,16 @@
+numpy
+numpy.libs
+PIL
+pyzbar
+scipy
+scipy.libs
+tcl
+tcl8
+tk
+_ctypes.pyd
+_socket.pyd
+base_library.zip
+pyexpat.pyd
+pyhton312.dll
+select.pyd
+unicodedata.pyd

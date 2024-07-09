@@ -1,0 +1,5 @@
+pyinstaller
+pdf2image
+pyzbar
+urllib3
+kraken
