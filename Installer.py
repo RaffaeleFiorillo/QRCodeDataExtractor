@@ -3,6 +3,21 @@ import subprocess
 import shutil
 
 
+def delete_build_dist():
+	try:
+		# Delete build folder if it exists
+		if os.path.exists('build'):
+			shutil.rmtree('build')
+			print("Deleted build folder.")
+		
+		# Delete dist folder if it exists
+		if os.path.exists('dist'):
+			shutil.rmtree('dist')
+			print("Deleted dist folder.")
+	except Exception as e:
+		print(f"An error occurred while deleting build/dist folders: {e}")
+		
+
 def delete_unlisted_entries(path, allowed_entries):
 	try:
 		# Get the list of all files and directories in the specified directory
@@ -19,7 +34,7 @@ def delete_unlisted_entries(path, allowed_entries):
 					os.remove(entry_path)
 					print(f"Deleted file: {entry_path}")
 				elif os.path.isdir(entry_path):
-					os.rmdir(entry_path)
+					shutil.rmtree(entry_path)
 					print(f"Deleted directory: {entry_path}")
 		
 		print(f"Unlisted entries have been deleted from {path}")
@@ -30,7 +45,10 @@ def delete_unlisted_entries(path, allowed_entries):
 def create_exe_from_spec(spec_file_path):
 	try:
 		# Call PyInstaller with the .spec file
-		result = subprocess.run(['pyinstaller', spec_file_path], capture_output=True, text=True)
+		result = subprocess.run(['pyinstaller', spec_file_path],
+		                        capture_output=True,
+		                        shell=True,
+		                        text=True)
 		
 		# Check if the process was successful
 		if result.returncode == 0:
@@ -39,6 +57,25 @@ def create_exe_from_spec(spec_file_path):
 			print("An error occurred during the creation of the executable.")
 			print(result.stdout)
 			print(result.stderr)
+	except Exception as e:
+		print(f"An error occurred: {e}")
+
+
+def copy_folder(source_folder, destination_folder):
+	try:
+		# Check if the source folder exists
+		if not os.path.exists(source_folder):
+			print(f"Error: Source folder '{source_folder}' does not exist.")
+			return
+		
+		# Create destination folder if it doesn't exist
+		if not os.path.exists(destination_folder):
+			os.makedirs(destination_folder)
+		
+		# Copy the contents of the source folder to the destination folder
+		shutil.copytree(source_folder, os.path.join(destination_folder, os.path.basename(source_folder)))
+		
+		print(f"Folder '{source_folder}' copied successfully to '{destination_folder}'.")
 	except Exception as e:
 		print(f"An error occurred: {e}")
 
@@ -135,15 +172,33 @@ REQUIRED_ITEMS = [
 	"_wmi.pyd",
 ]
 
-
 # Entries that will be moved into the release folder
 RELEASE_ENTRIES = [
-    'dist/QRCodeDataExtractor',
+	'dist/QRCodeDataExtractor/_internal',
+	'dist/QRCodeDataExtractor/QRCodeDataExtractor.exe',
 ]
-RELEASE_DESTINATION_FOLDER = ''         # same folder as installer
+RELEASE_DESTINATION_FOLDER = 'QRCodeExtractorV2.0'  # folder where the release is created
 SPEC_PATH = "QRCodeDataExtractor.spec"  # same folder as installer
-LIB_FOLDER_PATH = RELEASE_DESTINATION_FOLDER+"/_internal"
+LIB_FOLDER_PATH = RELEASE_DESTINATION_FOLDER + "/_internal"
+CONFIG_TXT_FILE = RELEASE_DESTINATION_FOLDER + "/conf_file"
 
-create_exe_from_spec(SPEC_PATH)
-move_entries_to_folder(RELEASE_ENTRIES, RELEASE_DESTINATION_FOLDER)
-delete_unlisted_entries(RELEASE_DESTINATION_FOLDER, REQUIRED_ITEMS)
+print("Deleting previous Tool Version ------------------------------------------------------------------------")
+if os.path.exists(RELEASE_DESTINATION_FOLDER):
+	shutil.rmtree(RELEASE_DESTINATION_FOLDER)
+print("Deleting existing dist and build folders --------------------------------------------------------------")
+delete_build_dist()  # delete the folders containing previous installations files
+print("Creating executable and dependencies (may take some time) ---------------------------------------------")
+create_exe_from_spec(SPEC_PATH)  # create the release files
+print("Moving files to Distribution Directory ----------------------------------------------------------------")
+move_entries_to_folder(RELEASE_ENTRIES, RELEASE_DESTINATION_FOLDER)  # move release files to release folder
+print("Moving Poppler to Distribution Directory --------------------------------------------------------------")
+copy_folder("poppler", RELEASE_DESTINATION_FOLDER)
+print("Deleting Obsolete Dependencies---------- --------------------------------------------------------------")
+delete_unlisted_entries(LIB_FOLDER_PATH, REQUIRED_ITEMS)  # delete all files not required for the tool to work
+print("Deleting dist and build folders -----------------------------------------------------------------------")
+delete_build_dist()  # delete the now obsolete folders created during installation
+print("Creating conf_file.txt  -------------------------------------------------------------------------------")
+with open(CONFIG_TXT_FILE, "w") as file:
+	pass
+
+input("Tool Update Complete. If no error occurred, the new release should be ready. (Press any button to Finish)")
