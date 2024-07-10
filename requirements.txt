@@ -1,5 +1,7 @@
 pyinstaller
-pdf2image
-pyzbar
+pdf2image~=1.17.0
+pyzbar~=0.1.9
 urllib3
-kraken
+kraken~=2.0.8
+pillow~=10.2.0
+numpy~=1.26.3
