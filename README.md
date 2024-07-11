@@ -53,8 +53,8 @@ Here is what can be found inside the json file when "QRCodeDataExtraction.exe" i
     "ErrorMessage": "No QRCode was found in *path of the file*"
     }
 # How to Upgrade:
-1- Install all required libraries for the code to work:
-	pip install -r requirements.txt
-2- Change the code inside QRCodeDataExtractor.py in a way that makes the tool work as you like
-3- Run ToolBuilder.exe
-4- The new version of the tool will be inside a folder called QRCodeDataExtractor
+	1- Install all required libraries for the code to work:
+		pip install -r requirements.txt
+	2- Change the code inside QRCodeDataExtractor.py in a way that makes the tool work as you like
+	3- Run ToolBuilder.exe
+	4- The new version of the tool will be inside a folder called QRCodeDataExtractor
