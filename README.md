@@ -1,4 +1,4 @@
-# QRCodeDataExtractor V2.0
+# QRCodeDataExtractor V2.1
 A simple tool to extract the data contained in a QRCode located inside a file.
 When executed, "QRCodeDataExtraction.exe" uses a pdf or image to create a json file with the data extracted from a QRCode (found inside the pdf).
 
@@ -31,7 +31,9 @@ Here is what can be found inside the json file when "QRCodeDataExtraction.exe" i
                 "Field": "Value",
             },
             "type": "QRCODE",
-            "area": integer indicating the are occupied by the QRCode (pixel*pixel)
+            "area": integer indicating the are occupied by the QRCode (pixel*pixel),
+	    "extractionTime": float representing how much time was spent extracting this QRCode,
+	    "enhancementWasRequired": bool that shows if image enhancement was used to be able to extract the QRCode.
         }
     ]
     }
