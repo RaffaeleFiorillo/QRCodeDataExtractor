@@ -45,6 +45,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon='report.ico'
 )
 coll = COLLECT(
     exe,
