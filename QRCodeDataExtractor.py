@@ -9,34 +9,7 @@ from kraken import binarization
 from PIL import Image
 
 
-def get_qrcodes_data_from_images(pdf_pages_as_png):
-    qr_data = []
-    
-    for page_number, png_page in enumerate(pdf_pages_as_png):
-        if png_page.size == (0, 0):
-            continue
-        
-        decoded_objects = decode(png_page, symbols=[ZBarSymbol.QRCODE])
-        
-        if len(decoded_objects) == 0 and len(qr_data) == 0:
-            for i in range(12):
-                decoded_objects = decode(enhance_image(png_page), symbols=[ZBarSymbol.QRCODE])
-                if len(decoded_objects) != 0:
-                    break
-        
-        for obj in decoded_objects:
-            str_data = obj.data.decode("utf-8")
-            qr_data.append({
-                "page": page_number + 1,
-                "originalData": str_data,
-                "dataAsJson": get_structured_qrcode_data(str_data),
-                "type": obj.type,
-                "area": obj.rect.width * obj.rect.height
-            })
-    
-    return qr_data
-
-
+# ------------------------------------------------ EXTRACTION ----------------------------------------------------------
 def get_structured_qrcode_data(data: str):
     data_as_dictionary = {}
     for raw_info in data.split("*"):
@@ -51,6 +24,36 @@ def enhance_image(image):
     enhanced_image = binarization.nlbin(image)
     return enhanced_image
 
+
+def get_qrcodes_data_from_images(pdf_pages_as_png):
+    qr_data = []
+    
+    for page_number, png_page in enumerate(pdf_pages_as_png):
+        enhancement_was_required = False
+        if png_page.size == (0, 0):
+            continue
+        
+        decoded_objects = decode(png_page, symbols=[ZBarSymbol.QRCODE])
+        
+        if len(decoded_objects) == 0 and len(qr_data) == 0:
+            enhancement_was_required = True
+            decoded_objects = decode(enhance_image(png_page), symbols=[ZBarSymbol.QRCODE])
+        
+        for obj in decoded_objects:
+            str_data = obj.data.decode("utf-8")
+            qr_data.append({
+                "page": page_number + 1,
+                "originalData": str_data,
+                "dataAsJson": get_structured_qrcode_data(str_data),
+                "type": obj.type,
+                "area": obj.rect.width * obj.rect.height,
+                "enhancementWasRequired": enhancement_was_required
+            })
+    
+    return qr_data
+
+
+# --------------------------------------------------- MAIN -------------------------------------------------------------
 
 def extract_qrcode_data_from_pdf(pdf_path: str):
     try:
