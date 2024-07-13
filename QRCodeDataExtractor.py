@@ -7,6 +7,7 @@ from pyzbar.pyzbar import ZBarSymbol
 from urllib.parse import unquote
 from kraken import binarization
 from PIL import Image
+import time
 
 
 # ------------------------------------------------ EXTRACTION ----------------------------------------------------------
@@ -33,11 +34,15 @@ def get_qrcodes_data_from_images(pdf_pages_as_png):
         if png_page.size == (0, 0):
             continue
         
+        t0 = time.time()
+        
         decoded_objects = decode(png_page, symbols=[ZBarSymbol.QRCODE])
         
         if len(decoded_objects) == 0 and len(qr_data) == 0:
             enhancement_was_required = True
             decoded_objects = decode(enhance_image(png_page), symbols=[ZBarSymbol.QRCODE])
+        
+        tf = time.time()
         
         for obj in decoded_objects:
             str_data = obj.data.decode("utf-8")
@@ -47,6 +52,7 @@ def get_qrcodes_data_from_images(pdf_pages_as_png):
                 "dataAsJson": get_structured_qrcode_data(str_data),
                 "type": obj.type,
                 "area": obj.rect.width * obj.rect.height,
+                "extractionTime": tf-t0,
                 "enhancementWasRequired": enhancement_was_required
             })
     
